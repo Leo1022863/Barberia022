@@ -383,3 +383,94 @@ def agendar_cita_cliente():
         flash(f'Error al procesar la reserva del turno: {e}', 'danger')
         
     return redirect(url_for('auth.cliente_dashboard'))
+
+# ==========================================================================
+# SECCIÓN 5: EDITAR Y ELIMINAR CITAS DESDE EL PANEL DEL CLIENTE
+# ==========================================================================
+
+# ==========================================================================
+# ELIMINAR / CANCELAR CITA (CLIENTE)
+# ==========================================================================
+@auth_bp.route('/cliente/cita/eliminar/<int:cita_id>', methods=['POST'])
+@login_required
+def eliminar_cita_cliente(cita_id):
+    if current_user.id_rol != 2:
+        flash('Acción no autorizada.', 'danger')
+        return redirect(url_for('auth.cliente_dashboard'))
+        
+    cita = Cita.query.get_or_404(cita_id)
+    
+    # Restricción de seguridad: Que la cita le pertenezca al usuario en sesión
+    if cita.id_cliente != current_user.id_usuario:
+        flash('No tienes permiso para eliminar esta reserva.', 'danger')
+        return redirect(url_for('auth.cliente_dashboard'))
+        
+    try:
+        db.session.delete(cita)
+        db.session.commit()
+        flash('La cita ha sido cancelada y eliminada con éxito.', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al eliminar la cita: {e}', 'danger')
+        
+    return redirect(url_for('auth.cliente_dashboard'))
+
+
+# ==========================================================================
+# EDITAR / REPROGRAMAR CITA (CLIENTE)
+# ==========================================================================
+@auth_bp.route('/cliente/cita/editar/<int:cita_id>', methods=['POST'])
+@login_required
+def editar_cita_cliente(cita_id):
+    if current_user.id_rol != 2:
+        flash('Acción no autorizada.', 'danger')
+        return redirect(url_for('auth.cliente_dashboard'))
+        
+    cita = Cita.query.get_or_404(cita_id)
+    
+    if cita.id_cliente != current_user.id_usuario:
+        flash('No tienes permiso para modificar esta reserva.', 'danger')
+        return redirect(url_for('auth.cliente_dashboard'))
+        
+    id_servicio = request.form.get('id_servicio')
+    id_barbero = request.form.get('id_barbero')
+    fecha_str = request.form.get('fecha_cita')
+    hora_str = request.form.get('hora_cita')
+    
+    if not (id_servicio and id_barbero and fecha_str and hora_str):
+        flash('Todos los campos son obligatorios para reprogramar.', 'danger')
+        return redirect(url_for('auth.cliente_dashboard'))
+        
+    try:
+        from datetime import datetime
+        fecha_objeto = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+        hora_objeto = datetime.strptime(hora_str, '%H:%M').time()
+        
+        # Validar que no choque con otra cita del mismo barbero (excepto con ella misma)
+        cita_duplicada = Cita.query.filter(
+            Cita.id_barbero == int(id_barbero),
+            Cita.fecha_cita == fecha_objeto,
+            Cita.hora_cita == hora_objeto,
+            Cita.estado != 'Cancelado',
+            Cita.id_cita != cita_id
+        ).first()
+        
+        if cita_duplicada:
+            flash('El horario seleccionado ya está ocupado por otro cliente. Por favor elige otro.', 'danger')
+            return redirect(url_for('auth.cliente_dashboard'))
+            
+        # Actualizamos los campos de la cita
+        cita.id_servicio = int(id_servicio)
+        cita.id_barbero = int(id_barbero)
+        cita.fecha_cita = fecha_objeto
+        cita.hora_cita = hora_objeto
+        cita.estado = 'Pendiente'  # Regresa a pendiente para revisión del barbero si es necesario
+        
+        db.session.commit()
+        flash('¡Tu cita ha sido reprogramada con éxito!', 'success')
+        
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error al modificar la reserva: {e}', 'danger')
+        
+    return redirect(url_for('auth.cliente_dashboard'))
