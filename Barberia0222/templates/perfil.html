@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="dashboard-header text-center mb-5">
+        <h1 class="brand-title">Bienvenido, {{ current_user.nombre }}</h1>
+        <p class="form-subtitle" style="color: #ffffff;">¿Qué vamos a hacer hoy con tu estilo?</p>
+    </div>
+
+    <div class="row g-4 justify-content-center">
+        
+        <div class="col-md-4">
+            <a href="#" class="dash-card-link">
+                <div class="form-card text-center dash-card">
+                    <i class="fas fa-calendar-check dash-icon"></i>
+                    <h3>Agendar Cita</h3>
+                    <p>Reserva tu espacio con tu barbero favorito.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="#" class="dash-card-link">
+                <div class="form-card text-center dash-card">
+                    <i class="fas fa-clock dash-icon"></i>
+                    <h3>Mis Citas</h3>
+                    <p>Revisa tus reservas próximas y pasadas.</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4">
+            <a href="#" class="dash-card-link">
+                <div class="form-card text-center dash-card">
+                    <i class="fas fa-user-cog dash-icon"></i>
+                    <h3>Mi Perfil</h3>
+                    <p>Actualiza tus datos y número de contacto.</p>
+                </div>
+            </a>
+        </div>
+
+    </div>
+    <div class="mb-4">
+    <label class="form-label text-warning small fw-bold mb-3">1. SELECCIONA EL SERVICIO</label>
+    <div class="row g-3">
+        {% if servicios %}
+            {% for servicio in servicios %}
+                <div class="col-md-4">
+                    <input type="radio" class="btn-check" name="id_servicio" id="serv_{{ servicio.id_servicio }}" value="{{ servicio.id_servicio }}" required>
+                    <label class="btn btn-outline-dark text-start p-3 w-100 h-100 card-servicio" for="serv_{{ servicio.id_servicio }}">
+                        
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="fw-bold text-white">{{ servicio.nombre_servicio }}</span>
+                            <span class="badge bg-warning text-dark">${{ "%.2f"|format(servicio.precio) }}</span>
+                        </div>
+                        
+                        <small class="text-white-50 d-block mt-2" style="font-size: 0.75rem;">{{ servicio.descripcion }}</small>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-2">
+                            <small class="text-warning" style="font-size: 0.75rem;">
+                                <i class="bi bi-clock me-1"></i> {{ servicio.duracion_minutos }} min
+                            </small>
+                            <span class="badge bg-success-subtle text-success" style="font-size: 0.65rem;">Disponible</span>
+                        </div>
+                        
+                    </label>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-3">
+                <p class="text-white-50 small mb-0">
+                    <i class="bi bi-exclamation-triangle me-2 text-warning"></i> No hay servicios disponibles en este momento.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+    <div class="form-card mt-5 w-100" style="max-width: 100%; border-style: dashed;">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <h4 style="color: #c9a84c; text-transform: uppercase; letter-spacing: 2px;">Estado de Cuenta</h4>
+                <p class="mb-0" style="color: #ffffff;">Aún no tienes citas registradas. ¡Anímate a renovar tu corte hoy mismo!</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn-primary" style="width: auto; padding: 10px 40px;">AGENDAR AHORA</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

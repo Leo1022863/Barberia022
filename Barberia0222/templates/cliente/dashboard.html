@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Barbería 022 - Mi Panel{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-white">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <span class="badge bg-warning text-dark mb-2" style="font-weight: 600; letter-spacing: 1px;">ZONA CLIENTE</span>
+            <h1 style="color: #c9a84c; font-weight: 700; letter-spacing: 0.5px;">¡Qué bueno verte, {{ current_user.nombre }}!</h1>
+            <p class="text-white-50">Gestiona tus turnos agendados y reserva tu próximo cambio de look con tu barbero favorito.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <button type="button" class="btn btn-warning btn-lg fw-bold px-4 py-2" style="background-color: #c9a84c; border: none; color: #111;" data-bs-toggle="modal" data-bs-target="#modalAgendarCita">
+                <i class="bi bi-calendar-plus me-2"></i> Agendar Nueva Cita
+            </button>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="p-4 rounded" style="background-color: #1a1c1e; border: 1px solid #2c3034;">
+                <h3 class="h5 mb-4 text-white d-flex align-items-center">
+                    <i class="bi bi-journal-bookmark-fill me-2 text-warning"></i> Mis Citas Solicitadas
+                </h3>
+
+                {% if citas %}
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0" style="border-color: #2c3034;">
+                        <thead>
+                            <tr style="color: #c9a84c; border-bottom: 2px solid #2c3034;">
+                                <th scope="col" class="py-3">Código</th>
+                                <th scope="col" class="py-3">Fecha</th>
+                                <th scope="col" class="py-3">Hora</th>
+                                <th scope="col" class="py-3">Servicio</th>
+                                <th scope="col" class="py-3">Barbero Asignado</th>
+                                <th scope="col" class="py-3">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cita in citas %}
+                            <tr>
+                                <td class="fw-bold text-white-50">#{{ cita.id_cita }}</td>
+                                <td>{{ cita.fecha_cita.strftime('%d/%m/%Y') if cita.fecha_cita else '-' }}</td>
+                                <td class="fw-bold text-warning">{{ cita.hora_cita.strftime('%H:%M') if cita.hora_cita else '-' }}</td>
+                                <td>
+                                    {% if cita.servicio %}
+                                    <span class="badge bg-dark border border-secondary text-white px-2 py-1">
+                                        {{ cita.servicio.nombre_servicio }}
+                                    </span>
+                                    {% else %}
+                                    <span class="text-muted">No definido</span>
+                                    {% endif %}
+                                </td>
+                        
+                                <td>
+                                    {% if cita.barbero %}
+                                    <i class="bi bi-person-fill me-1 text-white-50"></i> {{ cita.barbero.nombre }} {{ cita.barbero.apellido }}
+                                    {% else %}
+                                    <span class="text-muted">Por asignar</span>
+                                    {% endif %}
+                                </td>
+                        
+                                <td>
+                                    <span
+                                        class="badge {% if cita.estado == 'Pendiente' %}bg-warning text-dark{% elif cita.estado == 'Confirmada' %}bg-info text-dark{% elif cita.estado == 'Completada' %}bg-success text-white{% else %}bg-danger text-white{% endif %} px-3 py-1.5 fw-bold shadow-sm"
+                                        style="font-size: 0.8rem; letter-spacing: 0.5px;">
+                                        {{ cita.estado }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5 rounded" style="background-color: #141517; border: 1px dashed #2c3034;">
+                    <i class="bi bi-calendar-x display-4 text-white-50 mb-3 d-block"></i>
+                    <p class="text-white-50 mb-3">Aún no has solicitado ninguna cita en nuestro sistema.</p>
+                    <button type="button" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#modalAgendarCita">
+                        Reservar mi primer turno
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAgendarCita" tabindex="-1" aria-labelledby="modalAgendarCitaLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content text-white" style="background-color: #1a1c1e; border: 1px solid #c9a84c;">
+            
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title d-flex align-items-center" id="modalAgendarCitaLabel" style="color: #c9a84c; font-weight: 700;">
+                    <i class="bi bi-scissors me-2"></i> AGENDAR NUEVA RESERVA
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            
+            <form action="{{ url_for('auth.agendar_cita_cliente') }}" method="POST">
+                <div class="modal-body py-4">
+                    
+                    <div class="mb-4">
+                        <label class="form-label text-warning small fw-bold mb-2" style="letter-spacing: 0.5px;">1. SELECCIONA EL SERVICIO</label>
+                        
+                        <div class="servicios-scroll-container">
+                            <div class="row g-3">
+                                {% if servicios %}
+                                    {% for servicio in servicios %}
+                                    <div class="col-md-4">
+                                        <input type="radio" class="btn-check" name="id_servicio" id="serv_{{ servicio.id_servicio }}" value="{{ servicio.id_servicio }}" required>
+                                        <label class="btn btn-outline-dark text-start p-3 w-100 h-100 card-servicio" for="serv_{{ servicio.id_servicio }}">
+                                            
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <span class="fw-bold text-white title-serv">{{ servicio.nombre_servicio }}</span>
+                                                <span class="badge bg-warning text-dark">${{ "%.2f"|format(servicio.precio) }}</span>
+                                            </div>
+                                            
+                                            <small class="text-white-50 d-block mt-2 mechanical-line-clamp">{{ servicio.descripcion }}</small>
+                                            
+                                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                                <small class="text-warning" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-clock me-1"></i> {{ servicio.duracion_minutos }} min
+                                                </small>
+                                                <span class="badge bg-success-subtle text-success px-2 py-0.5" style="font-size: 0.65rem; background-color: rgba(25, 135, 84, 0.15) !important;">Disponible</span>
+                                            </div>
+                                            
+                                        </label>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="col-12 text-center py-4" style="background-color: #141517; border-radius: 8px; border: 1px dashed #2c3034;">
+                                        <p class="text-white-50 small mb-0">
+                                            <i class="bi bi-exclamation-triangle me-2 text-warning"></i> No hay servicios disponibles en este momento.
+                                        </p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label for="id_barbero" class="form-label text-warning small fw-bold" style="letter-spacing: 0.5px;">2. SELECCIONA TU BARBERO</label>
+                            <select class="form-select bg-dark text-white border-secondary py-2" id="id_barbero" name="id_barbero" required>
+                                <option value="" disabled selected>Elegir barbero...</option>
+                                {% for barbero in barberos %}
+                                    <option value="{{ barbero.id_usuario }}">Don {{ barbero.nombre }} {{ barbero.apellido }}</option>
+                                {% else %}
+                                    <option value="" disabled>No hay barberos disponibles</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="fecha_cita" class="form-label text-warning small fw-bold" style="letter-spacing: 0.5px;">3. FECHA DE LA CITA</label>
+                            <input type="date" class="form-control bg-dark text-white border-secondary py-2" id="fecha_cita" name="fecha_cita" min="{{ fecha_minima }}" value="{{ fecha_minima }}" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-2">
+                        <label class="form-label text-warning small fw-bold mb-3" style="letter-spacing: 0.5px;">4. SELECCIONA LA HORA (ATENCIÓN 9 AM - 8 PM)</label>
+                        <div class="d-flex flex-wrap gap-2 justify-content-start">
+                            {% set horas = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'] %}
+                            {% for h in horas %}
+                                <input type="radio" class="btn-check" name="hora_cita" id="hora_{{ loop.index }}" value="{{ h }}" required>
+                                <label class="btn btn-outline-secondary slot-hora fw-bold text-white py-2 px-3" for="hora_{{ loop.index }}">
+                                    <i class="bi bi-clock me-1 text-warning small"></i> {{ h }}
+                                </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+                
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning fw-bold px-4 btn-glow-confirm">
+                        CONFIRMAR RESERVA
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

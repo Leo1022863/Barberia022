@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Barbería 022{% endblock %}</title>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}?v=1.2">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="nav-container">
+            
+            <a class="navbar-brand" href="/">BARBERÍA <span>022</span></a>
+            
+            <ul class="nav-links">
+                {% if current_user.is_authenticated %}
+                    <li>
+                        <span class="nav-text me-3" style="color: #c9a84c;">
+                            <i class="fas fa-user-circle"></i> {{ current_user.nombre }}
+                        </span>
+                    </li>
+                    
+                    {# Lógica para mostrar link al dashboard según rol #}
+                    {% if current_user.id_rol == 1 %}
+                        <li><a href="{{ url_for('auth.admin_dashboard') }}">Panel Admin</a></li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{{ url_for('auth.logout') }}" class="btn-logout" style="color: #ff4444;">
+                            <i class="fas fa-sign-out-alt"></i> Salir
+                        </a>
+                    </li>
+                {% else %}
+                    <li>
+                        <a href="{{ url_for('auth.login') }}" 
+                           class="{{ 'active' if request.endpoint == 'auth.login' else '' }}">
+                           Login
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('auth.registro') }}" 
+                           class="{{ 'active' if request.endpoint == 'auth.registro' else '' }}">
+                           Registro
+                        </a>
+                    </li>
+                {% endif %}
+            </ul>
+        </div>
+    </nav>
+
+        <div class="main-wrapper">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-6 col-lg-5"> {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-warning alert-dismissible fade show bg-dark text-warning border-warning text-center mx-auto mt-4" role="alert" style="border-radius: 10px; width: 100%;">
+                            {{ message }}
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% endwith %}
+                </div>
+            </div>
+        </div>
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

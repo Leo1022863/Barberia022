@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Barbería 022 - Panel del Barbero{% endblock %}
+
+{% block content %}
+<div class="container mt-5 text-white">
+    <div class="row align-items-center mb-4">
+        <div class="col-md-8">
+            <span class="badge bg-warning text-dark mb-2" style="font-weight: 600; letter-spacing: 1px;">PANEL OPERATIVO</span>
+            <h1 style="color: #c9a84c; font-weight: 700; letter-spacing: 0.5px;">¡Saludos, Don {{ current_user.nombre }}!</h1>
+            <p class="text-white-50">Aquí tienes el control de tu agenda para hoy, <span class="text-warning fw-bold">{{ fecha_actual }}</span>.</p>
+        </div>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="p-4 rounded card-barbero-stats" style="background-color: #1a1c1e; border: 1px solid #2c3034;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-white-50 small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">Por Atender</p>
+                        <h2 class="display-6 fw-bold text-white mb-0">{{ pendientes }}</h2>
+                    </div>
+                    <div class="p-3 rounded bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-clock-history h3 mb-0"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 rounded card-barbero-stats" style="background-color: #1a1c1e; border: 1px solid #2c3034;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-white-50 small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">Cortes Listos</p>
+                        <h2 class="display-6 fw-bold text-success mb-0">{{ completadas }}</h2>
+                    </div>
+                    <div class="p-3 rounded bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-check2-circle h3 mb-0"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="p-4 rounded card-barbero-stats" style="background-color: #1a1c1e; border: 1px solid #2c3034;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-white-50 small text-uppercase fw-bold mb-1" style="letter-spacing: 0.5px;">Mis Ganancias (50%)</p>
+                        <h2 class="display-6 fw-bold text-warning mb-0">${{ "%.2f"|format(comisiones) }}</h2>
+                    </div>
+                    <div class="p-3 rounded bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-currency-dollar h3 mb-0"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="p-4 rounded" style="background-color: #1a1c1e; border: 1px solid #2c3034;">
+                
+                <ul class="nav nav-tabs border-bottom-0 mb-4 gap-2" id="agendaTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active text-uppercase fw-bold px-4 py-2-5 custom-tab-btn" id="hoy-tab" data-bs-toggle="tab" data-bs-target="#hoy-panel" type="button" role="tab" aria-controls="hoy-panel" aria-selected="true">
+                            <i class="bi bi-calendar-day me-2"></i> Agenda de Hoy
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link text-uppercase fw-bold px-4 py-2-5 custom-tab-btn" id="posteriores-tab" data-bs-toggle="tab" data-bs-target="#posteriores-panel" type="button" role="tab" aria-controls="posteriores-panel" aria-selected="false">
+                            <i class="bi bi-calendar-week me-2"></i> Próximos Días
+                            {% if citas_posteriores %}
+                                <span class="badge bg-warning text-dark ms-2" style="font-size: 0.7rem;">{{ citas_posteriores|length }}</span>
+                            {% endif %}
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="agendaTabsContent">
+                    
+                    <div class="tab-pane fade show active" id="hoy-panel" role="tabpanel" aria-labelledby="hoy-tab">
+                        {% if citas %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0" style="border-color: #2c3034;">
+                                <thead>
+                                    <tr style="color: #c9a84c; border-bottom: 2px solid #2c3034;">
+                                        <th scope="col" class="py-3">Hora</th>
+                                        <th scope="col" class="py-3">Cliente</th>
+                                        <th scope="col" class="py-3">Teléfono</th>
+                                        <th scope="col" class="py-3">Servicio Solicitado</th>
+                                        <th scope="col" class="py-3">Estado Actual</th>
+                                        <th scope="col" class="py-3 text-center">Acciones de Estado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cita in citas %}
+                                    <tr>
+                                        <td class="fw-bold text-warning fs-5">{{ cita.hora_cita.strftime('%H:%M') if cita.hora_cita else '-' }}</td>
+                                        <td class="fw-bold text-white">
+                                            {% if cita.cliente %}
+                                                {{ cita.cliente.nombre }} {{ cita.cliente.apellido }}
+                                            {% else %}
+                                                <span class="text-muted">Cliente Anónimo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-white-50">{{ cita.cliente.telefono or 'Sin teléfono' }}</td>
+                                        <td>
+                                            {% if cita.servicio %}
+                                                <span class="badge bg-dark border border-secondary text-white px-3 py-1.5">
+                                                    {{ cita.servicio.nombre_servicio }} (${{ "%.2f"|format(cita.servicio.precio) }})
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">No especificado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if cita.estado == 'Pendiente' %}bg-warning text-dark{% elif cita.estado == 'Confirmada' %}bg-info text-dark{% elif cita.estado == 'Completada' %}bg-success text-white{% else %}bg-danger text-white{% endif %} px-3 py-1.5 fw-bold shadow-sm" style="font-size: 0.8rem;">
+                                                {{ cita.estado }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <form action="{{ url_for('auth.actualizar_estado_cita', cita_id=cita.id_cita) }}" method="POST" class="d-inline-flex gap-1 justify-content-center">
+                                                <select name="nuevo_estado" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 130px;" onchange="this.form.submit()">
+                                                    <option value="" disabled selected>Cambiar a...</option>
+                                                    <option value="Pendiente" {% if cita.estado == 'Pendiente' %}disabled{% endif %}>Pendiente</option>
+                                                    <option value="Confirmada" {% if cita.estado == 'Confirmada' %}disabled{% endif %}>Confirmada</option>
+                                                    <option value="Completada" {% if cita.estado == 'Completada' %}disabled{% endif %}>Completada</option>
+                                                    <option value="Cancelada" {% if cita.estado == 'Cancelada' %}disabled{% endif %}>Cancelada</option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 rounded" style="background-color: #141517; border: 1px dashed #2c3034;">
+                            <i class="bi bi-emoji-sunglasses display-4 text-white-50 mb-3 d-block"></i>
+                            <p class="text-white-50 mb-0">No tienes turnos agendados para el día de hoy. ¡Día tranquilo!</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="tab-pane fade" id="posteriores-panel" role="tabpanel" aria-labelledby="posteriores-tab">
+                        {% if citas_posteriores %}
+                        <div class="table-responsive">
+                            <table class="table table-dark table-hover align-middle mb-0" style="border-color: #2c3034;">
+                                <thead>
+                                    <tr style="color: #c9a84c; border-bottom: 2px solid #2c3034;">
+                                        <th scope="col" class="py-3">Fecha Planeada</th>
+                                        <th scope="col" class="py-3">Hora</th>
+                                        <th scope="col" class="py-3">Cliente</th>
+                                        <th scope="col" class="py-3">Servicio Solicitado</th>
+                                        <th scope="col" class="py-3">Estado</th>
+                                        <th scope="col" class="py-3 text-center">Modificar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for cita in citas_posteriores %}
+                                    <tr>
+                                        <td>
+                                            <span class="badge bg-dark border border-warning text-warning px-3 py-1.5 fw-bold">
+                                                <i class="bi bi-calendar-event me-1"></i> {{ cita.fecha_cita.strftime('%d/%m/%Y') }}
+                                            </span>
+                                        </td>
+                                        <td class="fw-bold text-white">{{ cita.hora_cita.strftime('%H:%M') if cita.hora_cita else '-' }}</td>
+                                        <td class="fw-bold text-white">
+                                            {% if cita.cliente %}
+                                                {{ cita.cliente.nombre }} {{ cita.cliente.apellido }}
+                                            {% else %}
+                                                <span class="text-muted">Cliente Anónimo</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if cita.servicio %}
+                                                <span class="badge bg-dark border border-secondary text-white-50 px-2 py-1">
+                                                    {{ cita.servicio.nombre_servicio }}
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">No especificado</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if cita.estado == 'Pendiente' %}bg-warning text-dark{% elif cita.estado == 'Confirmada' %}bg-info text-dark{% elif cita.estado == 'Completada' %}bg-success text-white{% else %}bg-danger text-white{% endif %} px-3 py-1.5 fw-bold shadow-sm" style="font-size: 0.8rem;">
+                                                {{ cita.estado }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <form action="{{ url_for('auth.actualizar_estado_cita', cita_id=cita.id_cita) }}" method="POST" class="d-inline-flex gap-1 justify-content-center">
+                                                <select name="nuevo_estado" class="form-select form-select-sm bg-dark text-white border-secondary" style="width: 130px;" onchange="this.form.submit()">
+                                                    <option value="" disabled selected>Cambiar a...</option>
+                                                    <option value="Pendiente" {% if cita.estado == 'Pendiente' %}disabled{% endif %}>Pendiente</option>
+                                                    <option value="Confirmada" {% if cita.estado == 'Confirmada' %}disabled{% endif %}>Confirmada</option>
+                                                    <option value="Completada" {% if cita.estado == 'Completada' %}disabled{% endif %}>Completada</option>
+                                                    <option value="Cancelada" {% if cita.estado == 'Cancelada' %}disabled{% endif %}>Cancelada</option>
+                                                </select>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% else %}
+                        <div class="text-center py-5 rounded" style="background-color: #141517; border: 1px dashed #2c3034;">
+                            <i class="bi bi-calendar-x display-4 text-white-50 mb-3 d-block"></i>
+                            <p class="text-white-50 mb-0">No registras reservas para los próximos días por el momento.</p>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

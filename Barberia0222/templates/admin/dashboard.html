@@ -1,0 +1,331 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <span class="badge mb-2" style="background: #c9a84c; color: #000; font-weight: bold; padding: 8px 20px; border-radius: 20px;">
+            PANEL DE CONTROL
+        </span>
+        <h1 class="brand-title">Administración</h1>
+        <p class="text-white-50">Gestión integral de Barbería 022</p>
+    </div>
+
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="form-card text-center dash-card p-4 h-100">
+                <i class="fas fa-users dash-icon mb-3"></i>
+                <h3 class="h5" style="color: #c9a84c;">Clientes</h3>
+                <p class="small text-secondary">Base de datos de usuarios registrados.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-card text-center dash-card p-4 h-100">
+                <i class="fas fa-cut dash-icon mb-3"></i>
+                <h3 class="h5" style="color: #c9a84c;">Barberos</h3>
+                <p class="small text-secondary">Gestión de equipo y horarios.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-card text-center dash-card p-4 h-100">
+                <i class="fas fa-concierge-bell dash-icon mb-3"></i>
+                <h3 class="h5" style="color: #c9a84c;">Servicios</h3>
+                <p class="small text-secondary">Precios y catálogo de cortes.</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="form-card text-center dash-card p-4 h-100">
+                <i class="fas fa-chart-line dash-icon mb-3"></i>
+                <h3 class="h5" style="color: #c9a84c;">Reportes</h3>
+                <p class="small text-secondary">Métricas y rendimiento del negocio.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="form-card p-4 w-100" style="max-width: 100%; background: rgba(20, 20, 20, 0.95); border: 1px solid rgba(201, 168, 76, 0.3); border-radius: 15px;">
+        
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+            <h4 style="color: #c9a84c;" class="mb-0 text-uppercase">
+                <i class="fas fa-users-cog me-2"></i> Gestión de Usuarios y Roles
+            </h4>
+            <button class="btn btn-sm px-3 py-2" data-bs-toggle="modal" data-bs-target="#modalAgregarUsuario" style="background: #c9a84c; color: #000; font-weight: bold; border-radius: 8px; border: none; text-transform: uppercase;">
+                <i class="fas fa-user-plus me-2"></i>Agregar Usuario
+            </button>
+        </div>
+
+        <ul class="nav nav-pills mb-4 justify-content-center gap-2" id="userTabs" role="tablist" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 15px;">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active px-4 py-2" id="clientes-tab" data-bs-toggle="tab" data-bs-target="#clientes-pane" type="button" role="tab" aria-controls="clientes-pane" aria-selected="true">
+                    <i class="fas fa-user me-2"></i>CLIENTES
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4 py-2" id="barberos-tab" data-bs-toggle="tab" data-bs-target="#barberos-pane" type="button" role="tab" aria-controls="barberos-pane" aria-selected="false">
+                    <i class="fas fa-cut me-2"></i>BARBEROS
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link px-4 py-2" id="admins-tab" data-bs-toggle="tab" data-bs-target="#admins-pane" type="button" role="tab" aria-controls="admins-pane" aria-selected="false">
+                    <i class="fas fa-user-shield me-2"></i>ADMINISTRADORES
+                </button>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="userTabsContent">
+            
+            <div class="tab-pane fade show active" id="clientes-pane" role="tabpanel" aria-labelledby="clientes-tab" tabindex="0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0">
+                        <thead>
+                            <tr style="color: #c9a84c; border-bottom: 2px solid rgba(201, 168, 76, 0.3);">
+                                <th style="width: 10%">ID</th>
+                                <th style="width: 30%">Nombre Completo</th>
+                                <th style="width: 30%">Correo Electrónico</th>
+                                <th style="width: 15%" class="text-center">Asignar Rol</th>
+                                <th style="width: 15%" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in usuarios if user.id_rol == 2 %}
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td class="text-secondary small">#{{ user.id_usuario }}</td>
+                                <td class="fw-bold text-white">{{ user.nombre }} {{ user.apellido }}</td>
+                                <td class="text-white-50">{{ user.email }}</td>
+                                <td>
+                                    <form action="{{ url_for('auth.cambiar_rol', usuario_id=user.id_usuario) }}" method="POST" class="d-flex gap-2 justify-content-center align-items-center">
+                                        <select name="nuevo_rol" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                            <option value="1">Admin</option>
+                                            <option value="2" selected>Cliente</option>
+                                            <option value="3">Barbero</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-rol-update">
+                                            ACTUALIZAR
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('auth.editar_usuario_view', usuario_id=user.id_usuario) }}" class="btn btn-sm btn-outline-info" title="Editar"><i class="fas fa-edit"></i></a>
+                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ user.id_usuario }}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade" id="modalEliminar{{ user.id_usuario }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content bg-dark text-white" style="border: 1px solid rgba(201,168,76,0.5);">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title text-uppercase" style="color: #c9a84c;">¿Eliminar Usuario?</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <p>¿Estás seguro de que deseas eliminar a <strong>{{ user.nombre }} {{ user.apellido }}</strong>?</p>
+                                            <p class="text-danger small mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Esta acción no se puede deshacer.</p>
+                                        </div>
+                                        <div class="modal-footer border-secondary">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form action="{{ url_for('auth.eliminar_usuario', usuario_id=user.id_usuario) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-danger">ELIMINAR</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No hay clientes registrados actualmente.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="barberos-pane" role="tabpanel" aria-labelledby="barberos-tab" tabindex="0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0">
+                        <thead>
+                            <tr style="color: #c9a84c; border-bottom: 2px solid rgba(201, 168, 76, 0.3);">
+                                <th style="width: 10%">ID</th>
+                                <th style="width: 30%">Nombre Completo</th>
+                                <th style="width: 30%">Correo Electrónico</th>
+                                <th style="width: 15%" class="text-center">Asignar Rol</th>
+                                <th style="width: 15%" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in usuarios if user.id_rol == 3 %}
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td class="text-secondary small">#{{ user.id_usuario }}</td>
+                                <td class="fw-bold text-white">{{ user.nombre }} {{ user.apellido }}</td>
+                                <td class="text-white-50">{{ user.email }}</td>
+                                <td>
+                                    <form action="{{ url_for('auth.cambiar_rol', usuario_id=user.id_usuario) }}" method="POST" class="d-flex gap-2 justify-content-center align-items-center">
+                                        <select name="nuevo_rol" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                            <option value="1">Admin</option>
+                                            <option value="2">Cliente</option>
+                                            <option value="3" selected>Barbero</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-rol-update">
+                                            ACTUALIZAR
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('auth.editar_usuario_view', usuario_id=user.id_usuario) }}" class="btn btn-sm btn-outline-info" title="Editar"><i class="fas fa-edit"></i></a>
+                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ user.id_usuario }}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade" id="modalEliminar{{ user.id_usuario }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content bg-dark text-white" style="border: 1px solid rgba(201,168,76,0.5);">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title text-uppercase" style="color: #c9a84c;">¿Eliminar Usuario?</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <p>¿Estás seguro de que deseas eliminar a <strong>{{ user.nombre }} {{ user.apellido }}</strong>?</p>
+                                            <p class="text-danger small mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Esta acción no se puede deshacer.</p>
+                                        </div>
+                                        <div class="modal-footer border-secondary">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form action="{{ url_for('auth.eliminar_usuario', usuario_id=user.id_usuario) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-danger">ELIMINAR</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No hay barberos registrados actualmente.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="admins-pane" role="tabpanel" aria-labelledby="admins-tab" tabindex="0">
+                <div class="table-responsive">
+                    <table class="table table-dark table-hover align-middle mb-0">
+                        <thead>
+                            <tr style="color: #c9a84c; border-bottom: 2px solid rgba(201, 168, 76, 0.3);">
+                                <th style="width: 10%">ID</th>
+                                <th style="width: 30%">Nombre Completo</th>
+                                <th style="width: 30%">Correo Electrónico</th>
+                                <th style="width: 15%" class="text-center">Asignar Rol</th>
+                                <th style="width: 15%" class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in usuarios if user.id_rol == 1 %}
+                            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                                <td class="text-secondary small">#{{ user.id_usuario }}</td>
+                                <td class="fw-bold text-white">{{ user.nombre }} {{ user.apellido }}</td>
+                                <td class="text-white-50">{{ user.email }}</td>
+                                <td>
+                                    <form action="{{ url_for('auth.cambiar_rol', usuario_id=user.id_usuario) }}" method="POST" class="d-flex gap-2 justify-content-center align-items-center">
+                                        <select name="nuevo_rol" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                            <option value="1" selected>Admin</option>
+                                            <option value="2">Cliente</option>
+                                            <option value="3">Barbero</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-sm btn-rol-update">
+                                            ACTUALIZAR
+                                        </button>
+                                    </form>
+                                </td>
+                                <td class="text-center">
+                                    <div class="d-flex justify-content-center gap-2">
+                                        <a href="{{ url_for('auth.editar_usuario_view', usuario_id=user.id_usuario) }}" class="btn btn-sm btn-outline-info" title="Editar"><i class="fas fa-edit"></i></a>
+                                        <button class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#modalEliminar{{ user.id_usuario }}" title="Eliminar"><i class="fas fa-trash-alt"></i></button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <div class="modal fade" id="modalEliminar{{ user.id_usuario }}" tabindex="-1" aria-hidden="true">
+                                <div class="modal-dialog modal-dialog-centered">
+                                    <div class="modal-content bg-dark text-white" style="border: 1px solid rgba(201,168,76,0.5);">
+                                        <div class="modal-header border-secondary">
+                                            <h5 class="modal-title text-uppercase" style="color: #c9a84c;">¿Eliminar Usuario?</h5>
+                                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-start">
+                                            <p>¿Estás seguro de que deseas eliminar a <strong>{{ user.nombre }} {{ user.apellido }}</strong>?</p>
+                                            <p class="text-danger small mb-0"><i class="fas fa-exclamation-triangle me-2"></i> Esta acción no se puede deshacer.</p>
+                                        </div>
+                                        <div class="modal-footer border-secondary">
+                                            <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                                            <form action="{{ url_for('auth.eliminar_usuario', usuario_id=user.id_usuario) }}" method="POST" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-danger">ELIMINAR</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted py-4">No hay administradores registrados actualmente.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="modalAgregarUsuario" tabindex="-1" aria-labelledby="modalAgregarUsuarioLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white" style="border: 1px solid #c9a84c; border-radius: 12px;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                <h5 class="modal-title" id="modalAgregarUsuarioLabel" style="color: #c9a84c;"><i class="fas fa-user-plus me-2"></i>REGISTRAR NUEVO USUARIO</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="{{ url_for('auth.agregar_usuario') }}" method="POST">
+                <div class="modal-body text-start">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label text-white-50 small">Nombre</label>
+                            <input type="text" name="nombre" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-white-50 small">Apellido</label>
+                            <input type="text" name="apellido" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-white-50 small">Correo Electrónico</label>
+                            <input type="email" name="email" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-white-50 small">Contraseña Temporal</label>
+                            <input type="password" name="password" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-white-50 small">Numero de Teléfono</label>
+                            <input type="text" name="telefono" class="form-control bg-dark text-white border-secondary" required>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label text-white-50 small">Rol de Usuario</label>
+                            <select name="id_rol" class="form-select bg-dark text-white border-secondary">
+                                <option value="2" selected>Cliente</option>
+                                <option value="3">Barbero</option>
+                                <option value="1">Administrador</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border-top: 1px solid rgba(255,255,255,0.1);">
+                    <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                    <button type="submit" class="btn btn-sm" style="background: #c9a84c; color: #000; font-weight: bold;">GUARDAR USUARIO</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
